@@ -7,22 +7,22 @@ namespace Task_35
     {
         static void Main(string[] args)
         {
-            Troop troop = new Troop();
+            Troop troopOne = new Troop();
+            Troop troopTwo = new Troop();
 
             Console.Write("Сколько бойцов в первом взводе ? :");
             int countTroopOne = Convert.ToInt32(Console.ReadLine());
-            troop.AddTroopOne(countTroopOne);
+            troopOne.AddTroop(countTroopOne);
 
             Console.Write("Сколько бойцов во втором взводе ? :");
             int countTroopTwo = Convert.ToInt32(Console.ReadLine());
-            troop.AddTroopTwo(countTroopTwo);
+            troopTwo.AddTroop(countTroopTwo);
 
-            while (troop.TroopOne.Count > 0 && troop.TroopTwo.Count > 0 )
+            while (troopOne.RemainedFighters() && troopTwo.RemainedFighters())
             {
-                Fighter fighterOne = troop.TroopOne[0];
-                Fighter fighterTwo = troop.TroopTwo[0];
+                Fighter fighterOne = troopOne.FightingFighter();
+                Fighter fighterTwo = troopTwo.FightingFighter();
 
-                Console.WriteLine();
                 fighterOne.GetSkill();
                 fighterTwo.GetSkill();
 
@@ -31,17 +31,14 @@ namespace Task_35
 
                 if (fighterOne.Health <= 0)
                 {
-                    troop.TroopOne.RemoveAt(0);
+                    troopOne.DeleteFighter();
                 }
                 else if(fighterTwo.Health <= 0)
                 {
-                    troop.TroopTwo.RemoveAt(0);
+                    troopTwo.DeleteFighter();
                 }
-
-                fighterOne.ShowStats(troop.TroopOne.Count);
-                fighterTwo.ShowStats(troop.TroopTwo.Count);
             }
-            if(troop.TroopOne.Count == 0)
+            if(troopOne.RemainedFighters() == false)
             {
                 Console.WriteLine($"\nПобедил второй отряд");
             }
@@ -51,33 +48,10 @@ namespace Task_35
             }
         }
     }
-    class Troop 
+    class Troop
     {
-        protected List<Fighter> _troopOne = new List<Fighter>();
-        protected List<Fighter> _troopTwo = new List<Fighter>();
-        public List<Fighter> TroopOne
-        {
-            get
-            {
-                return _troopOne;
-            }
-            private set
-            {
-
-            }
-        }
-        public List<Fighter> TroopTwo
-        {
-            get
-            {
-                return _troopTwo;
-            }
-            private set
-            {
-
-            }
-        }
-        public void AddTroopOne(int count)
+        private List<Fighter> _troop = new List<Fighter>();        
+        public void AddTroop(int count)
         {
             Random rand = new Random();
             for (int i = 0; i < count; i++)
@@ -85,144 +59,117 @@ namespace Task_35
                 switch (rand.Next(1, 5))
                 {
                     case 1:
-                        _troopOne.Add(new Warrior(1000, 50, 15));
+                        _troop.Add(new Warrior(1000, 50, 15));
                         break;
                     case 2:
-                        _troopOne.Add(new Barbarian(2000, 25, 0));
+                        _troop.Add(new Barbarian(2000, 25, 0));
                         break;
                     case 3:
-                        _troopOne.Add(new Berserker(1300, 30, 20));
+                        _troop.Add(new Berserker(1300, 30, 20));
                         break;
                     case 4:
-                        _troopOne.Add(new Rogue(500, 50, 10));
+                        _troop.Add(new Rogue(500, 50, 10));
                         break;
                     case 5:
-                        _troopOne.Add(new Knight(800, 90, 20));
+                        _troop.Add(new Knight(800, 90, 20));
                         break;
                 }
             }
         }
-        public void AddTroopTwo(int count)
+        public bool RemainedFighters()
         {
-            Random rand = new Random();
-            for (int i = 0; i < count; i++)
+            if(_troop.Count > 0)
             {
-                switch (rand.Next(1, 5))
-                {
-                    case 1:
-                        _troopTwo.Add(new Warrior(1000, 50, 15));
-                        break;
-                    case 2:
-                        _troopTwo.Add(new Barbarian(2000, 35, 0));
-                        break;
-                    case 3:
-                        _troopTwo.Add(new Berserker(1300, 40, 20));
-                        break;
-                    case 4:
-                        _troopTwo.Add(new Rogue(500, 150, 10));
-                        break;
-                    case 5:
-                        _troopTwo.Add(new Knight(800, 90, 20));
-                        break;
-                }
+                return true;
             }
+            else
+            {
+                return false;
+            }
+        }
+        public void DeleteFighter()
+        {
+            _troop.RemoveAt(0);
+        }
+        public Fighter FightingFighter()
+        {
+            return _troop[0];
         }
     }    
-    abstract class Fighter : Troop
+    abstract class Fighter 
     {
-        protected int _health;
-        protected int _damage;
-        protected int _armor;
-        public int Health
+        public int Health;
+        public int Damage;
+        public int Armor;       
+        
+        public Fighter(int health, int damage, int armor)
         {
-            get
-            {
-                return _health;
-            }
-            private set
-            {
-
-            }
-        }
-        public int Damage
-        {
-            get
-            {
-                return _damage;
-            }
-            private set
-            {
-
-            }
-        }
-        public Fighter(int health = 0, int damage = 0, int armor = 0)
-        {
-            _damage = damage;
-            _health = health;
-            _armor = armor;
+            Health = damage;
+            Damage = health;
+            Armor = armor;
         }
         public void ShowStats(int countFighters)
         {
-            Console.WriteLine($"Жизней {_health}, Урон {_damage}, Защиты {_armor}.\nОсталось бойцов {countFighters}");
+            Console.WriteLine($"Жизней {Health}, Урон {Damage}, Защиты {Armor}.\nОсталось бойцов {countFighters}");
         }
 
         public abstract void GetSkill();    
         
         public void TakeDamage(int damage)
         {
-            _health -= damage - _armor;
+            Health -= damage - Armor;
         }        
     }    
     class Warrior : Fighter
     {
         public Warrior(int health, int damage, int armor) : base(health, damage, armor)
         {
-            _health = health;
-            _damage = damage;
-            _armor = armor;
+            Health = health;
+            Damage = damage;
+            Armor = armor;
         }
         public override void GetSkill()
         {
-            _health += _damage;
+            Health += Damage;
         }
     }
     class Barbarian : Fighter
     {
         public Barbarian(int health, int damage, int armor) : base(health, damage, armor)
         {
-            _health = health;
-            _damage = damage;
-            _armor = armor;
+            Health = health;
+            Damage = damage;
+            Armor = armor;
         }
         public override void GetSkill()
         {
-            _damage += 10;
+            Damage += 10;
         }
     }
     class Knight : Fighter
     {
         public Knight(int health, int damage, int armor) : base(health, damage, armor)
         {
-            _health = health;
-            _damage = damage;
-            _armor = armor;
+            Health = health;
+            Damage = damage;
+            Armor = armor;
         }
         public override void GetSkill()
         {
-            _armor += 3;
+            Armor += 3;
         }
     }
     class Rogue : Fighter
     {
         public Rogue(int health, int damage, int armor) : base(health, damage, armor)
         {
-            _health = health;
-            _damage = damage;
-            _armor = armor;
+            Health = health;
+            Damage = damage;
+            Armor = armor;
         }
         public override void GetSkill()
         {
-            _health += _damage;
+            Health += Damage;
         }
     }
     class Berserker : Fighter
@@ -230,9 +177,9 @@ namespace Task_35
         private int _step = 0;
         public Berserker(int health, int damage, int armor) : base(health, damage, armor)
         {
-            _health = health;
-            _damage = damage;
-            _armor = armor;
+            Health = health;
+            Damage = damage;
+            Armor = armor;
         }
         public override void GetSkill()
         {
@@ -240,11 +187,11 @@ namespace Task_35
 
             if (_step % 2 == 0)
             {
-                _damage += 100;
+                Damage += 100;
             }
             if (_step % 3 == 0)
             {
-                _damage -= 100;
+                Damage -= 100;
             }
         }
     }
